@@ -1,0 +1,411 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Precifica 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: app de uma coluna para celular — abas no topo, calculadora com resultado em "placa de impressão", guia em seções com checklist */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --fg:#17202a; --muted:#5b6876; --line:#dde3e9;
+  --accent:#0b7a75; --accent-soft:#dff1ef; --accent-fg:#ffffff;
+  --amber:#c56a00; --amber-soft:#fff1de; --bad:#b3261e; --bad-soft:#fde8e6;
+  --bar1:#0b7a75; --bar2:#e0a33a; --bar3:#5b8bd9; --bar4:#a46ad6; --bar5:#7d8b99; --bar6:#d65f5f;
+  --display:"Bricolage Grotesque", "Trebuchet MS", sans-serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1418; --surface:#172027; --fg:#e7edf2; --muted:#9aa8b5; --line:#2a3640;
+  --accent:#3cc2b9; --accent-soft:#12332f; --accent-fg:#06201d;
+  --amber:#f0a94a; --amber-soft:#33250f; --bad:#ff8a80; --bad-soft:#3a1714;
+  --bar1:#3cc2b9; --bar2:#f0b955; --bar3:#7ea7ee; --bar4:#c08ae8; --bar5:#8c9aa8; --bar6:#ee7f7f;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1418; --surface:#172027; --fg:#e7edf2; --muted:#9aa8b5; --line:#2a3640;
+  --accent:#3cc2b9; --accent-soft:#12332f; --accent-fg:#06201d;
+  --amber:#f0a94a; --amber-soft:#33250f; --bad:#ff8a80; --bad-soft:#3a1714;
+  --bar1:#3cc2b9; --bar2:#f0b955; --bar3:#7ea7ee; --bar4:#c08ae8; --bar5:#8c9aa8; --bar6:#ee7f7f;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+header.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.logo{width:40px;height:40px;flex:none}
+h1{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.1;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:.9rem;margin:2px 0 0}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:20px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.tab{flex:1;font:600 .95rem var(--body);border:0;background:transparent;color:var(--muted);padding:10px 8px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
+.tab:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* Resultado */
+.plate{position:relative;border-radius:16px;padding:20px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.plate::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 5px,var(--accent-soft) 5px 6px);opacity:.7;pointer-events:none}
+.plate > *{position:relative}
+.eyebrow{font:600 .72rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.price{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,11vw,3.4rem);line-height:1;color:var(--accent);margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.price-note{font-size:.9rem;color:var(--muted)}
+.price-note strong{color:var(--fg)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.kpi{background:var(--bg);border-radius:10px;padding:10px}
+.kpi b{display:block;font-family:var(--mono);font-size:1rem;font-variant-numeric:tabular-nums}
+.kpi span{font-size:.75rem;color:var(--muted)}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:16px;background:var(--line)}
+.bar i{display:block;height:100%}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:10px;font-size:.82rem}
+.legend div{display:flex;align-items:center;gap:6px;min-width:0}
+.legend em{font-style:normal;margin-left:auto;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:2px;flex:none}
+.alert{margin-top:14px;padding:10px 12px;border-radius:10px;font-size:.88rem;background:var(--amber-soft);color:var(--fg);border-left:4px solid var(--amber)}
+.alert.bad{background:var(--bad-soft);border-color:var(--bad)}
+
+/* Formulário */
+.group{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px}
+.group h2{font-family:var(--display);font-weight:600;font-size:1.15rem;margin:0 0 2px}
+.group p.hint{margin:0 0 12px;color:var(--muted);font-size:.86rem}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field.full{grid-column:1/-1}
+label{font-size:.85rem;font-weight:600}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
+.inp span{padding:0 10px;color:var(--muted);font-size:.85rem;white-space:nowrap}
+.inp input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:500 1rem var(--mono);padding:11px 10px;font-variant-numeric:tabular-nums}
+.inp input:focus{outline:none}
+.inp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+small.help{color:var(--muted);font-size:.78rem;line-height:1.35}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{font:600 .92rem var(--body);border-radius:10px;padding:11px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.formula{margin-top:16px;font-size:.85rem;color:var(--muted)}
+.formula code{font-family:var(--mono);color:var(--fg);background:var(--bg);padding:2px 6px;border-radius:6px}
+
+/* Guia */
+.guide section{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-top:14px;overflow:hidden}
+.guide details > summary{list-style:none;cursor:pointer;padding:16px;display:flex;align-items:center;gap:12px}
+.guide details > summary::-webkit-details-marker{display:none}
+.guide summary h2{font-family:var(--display);font-weight:600;font-size:1.12rem;margin:0;text-wrap:balance;flex:1}
+.guide summary .chev{transition:transform .2s;color:var(--muted)}
+.guide details[open] .chev{transform:rotate(90deg)}
+.ico{width:34px;height:34px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.ico svg{width:19px;height:19px}
+.gbody{padding:0 16px 16px;max-width:65ch}
+.gbody ul{margin:0;padding-left:1.15rem;display:grid;gap:8px}
+.gbody li strong{color:var(--fg)}
+.gbody p{margin:0 0 10px}
+.intro{color:var(--muted);margin:0 0 4px}
+.check{list-style:none;padding:0!important}
+.check li{display:flex;gap:10px;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+.check label{font-weight:500;font-size:.95rem}
+.check input:checked + label{color:var(--muted);text-decoration:line-through}
+.progress{font-family:var(--mono);font-size:.82rem;color:var(--accent);margin-left:auto}
+.tag{display:inline-block;font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--amber-soft);color:var(--amber);margin-right:4px}
+@media (max-width:420px){.fields{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.legend{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+      <rect x="2" y="2" width="36" height="36" rx="10" fill="var(--accent)"/>
+      <path d="M14 10h12l-3 6h-6z" fill="var(--accent-fg)"/>
+      <rect x="11" y="24" width="18" height="2.4" rx="1.2" fill="var(--accent-fg)"/>
+      <rect x="13" y="28" width="14" height="2.4" rx="1.2" fill="var(--accent-fg)" opacity=".8"/>
+      <rect x="15" y="32" width="10" height="2.4" rx="1.2" fill="var(--accent-fg)" opacity=".6"/>
+    </svg>
+    <div>
+      <h1>FEFS 3D</h1>
+      <p class="sub">Quanto cobrar por cada peça, e como começar a vender do jeito certo</p>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-calc" aria-selected="true" aria-controls="calc">Calculadora</button>
+    <button class="tab" role="tab" id="tab-guia" aria-selected="false" aria-controls="guia">Guia do negócio</button>
+  </nav>
+
+  <!-- CALCULADORA -->
+  <main id="calc" role="tabpanel" aria-labelledby="tab-calc">
+    <div class="plate" aria-live="polite">
+      <div class="eyebrow">Preço sugerido por peça</div>
+      <div class="price" id="outPrice">R$ 0,00</div>
+      <div class="price-note">Arredondado para vitrine: <strong id="outRound">R$ 0,00</strong></div>
+      <div class="kpis">
+        <div class="kpi"><b id="outCost">R$ 0</b><span>Custo total</span></div>
+        <div class="kpi"><b id="outProfit">R$ 0</b><span>Lucro no bolso</span></div>
+        <div class="kpi"><b id="outMin">R$ 0</b><span>Preço mínimo (sem lucro)</span></div>
+      </div>
+      <div class="bar" id="bar"></div>
+      <div class="legend" id="legend"></div>
+      <div id="alerts"></div>
+    </div>
+
+    <form id="form" autocomplete="off">
+      <div class="group">
+        <h2>1. A peça</h2>
+        <p class="hint">Copie o peso e o tempo que o fatiador (Orca-Flashforge) mostra depois de fatiar.</p>
+        <div class="fields">
+          <div class="field full"><label for="nome">Nome do produto</label>
+            <div class="inp"><input id="nome" type="text" value="Chaveiro personalizado" style="font-family:var(--body)"></div></div>
+          <div class="field"><label for="gramas">Peso da peça</label>
+            <div class="inp"><input id="gramas" type="number" inputmode="decimal" min="0" step="any" value="18"><span>g</span></div></div>
+          <div class="field"><label for="purga">Sobra de troca de cor</label>
+            <div class="inp"><input id="purga" type="number" inputmode="decimal" min="0" step="any" value="6"><span>g</span></div>
+            <small class="help">Na impressão multicolorida, o fatiador mostra o filamento descartado. Peça de 1 cor: 0.</small></div>
+          <div class="field"><label for="horas">Tempo de impressão</label>
+            <div class="inp"><input id="horas" type="number" inputmode="decimal" min="0" step="any" value="1.5"><span>horas</span></div>
+            <small class="help">1h30 = 1.5 · 45 min = 0.75</small></div>
+          <div class="field"><label for="trab">Seu trabalho manual</label>
+            <div class="inp"><input id="trab" type="number" inputmode="decimal" min="0" step="any" value="10"><span>min</span></div>
+            <small class="help">Tirar suportes, lixar, montar, embalar, atender.</small></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>2. Seus custos</h2>
+        <p class="hint">Preencha uma vez com os seus valores. A calculadora lembra neste aparelho.</p>
+        <div class="fields">
+          <div class="field"><label for="filkg">Preço do filamento</label>
+            <div class="inp"><span>R$</span><input id="filkg" type="number" inputmode="decimal" min="0" step="any" value="100"><span>/kg</span></div>
+            <small class="help">Rolo de 1 kg com frete incluso.</small></div>
+          <div class="field"><label for="kwh">Preço da energia</label>
+            <div class="inp"><span>R$</span><input id="kwh" type="number" inputmode="decimal" min="0" step="any" value="0.95"><span>/kWh</span></div>
+            <small class="help">Está na conta de luz. Some as taxas.</small></div>
+          <div class="field"><label for="watts">Consumo da impressora</label>
+            <div class="inp"><input id="watts" type="number" inputmode="decimal" min="0" step="any" value="150"><span>W</span></div>
+            <small class="help">Média durante a impressão. 150 W é um bom chute.</small></div>
+          <div class="field"><label for="hora">Valor da sua hora</label>
+            <div class="inp"><span>R$</span><input id="hora" type="number" inputmode="decimal" min="0" step="any" value="20"><span>/h</span></div></div>
+          <div class="field"><label for="impval">Valor da impressora</label>
+            <div class="inp"><span>R$</span><input id="impval" type="number" inputmode="decimal" min="0" step="any" value="3500"></div></div>
+          <div class="field"><label for="vida">Vida útil estimada</label>
+            <div class="inp"><input id="vida" type="number" inputmode="decimal" min="1" step="any" value="3000"><span>horas</span></div>
+            <small class="help">Serve para juntar dinheiro para peças e uma futura impressora.</small></div>
+          <div class="field full"><label for="extras">Embalagem e extras por peça</label>
+            <div class="inp"><span>R$</span><input id="extras" type="number" inputmode="decimal" min="0" step="any" value="2.5"></div>
+            <small class="help">Saquinho, etiqueta, argola do chaveiro, ímã, cola, cartão de agradecimento.</small></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>3. Margem e taxas</h2>
+        <p class="hint">A margem é calculada em cima do preço de venda, que é o jeito certo.</p>
+        <div class="fields">
+          <div class="field"><label for="margem">Margem de lucro</label>
+            <div class="inp"><input id="margem" type="number" inputmode="decimal" min="0" max="90" step="any" value="30"><span>%</span></div></div>
+          <div class="field"><label for="falha">Reserva para falhas</label>
+            <div class="inp"><input id="falha" type="number" inputmode="decimal" min="0" step="any" value="8"><span>%</span></div>
+            <small class="help">Impressões que dão errado acontecem. Alguém tem que pagar por elas.</small></div>
+          <div class="field full"><label for="taxa">Taxa da plataforma ou cartão</label>
+            <div class="inp"><input id="taxa" type="number" inputmode="decimal" min="0" max="90" step="any" value="0"><span>%</span></div>
+            <small class="help">Venda direta no Pix: 0. Maquininha, Shopee ou Mercado Livre: coloque a taxa que eles cobram hoje.</small></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="reset">Voltar aos valores de exemplo</button>
+      </div>
+      <p class="formula">Como o preço é calculado: <code>Preço = Custo ÷ (1 − Margem − Taxa)</code>. O custo já inclui a reserva para falhas.</p>
+    </form>
+  </main>
+
+  <!-- GUIA -->
+  <div id="guia" class="guide" role="tabpanel" aria-labelledby="tab-guia" hidden>
+    <p class="intro">Tudo o que faz diferença no começo, em linguagem direta. Toque em cada tema para abrir.</p>
+
+    <section><details open>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><h2>Checklist de largada</h2><span class="progress" id="prog">0/10</span></summary>
+      <div class="gbody">
+        <p>Na ordem em que vale fazer. Marque conforme for concluindo.</p>
+        <ul class="check" id="checklist">
+          <li><input type="checkbox" id="c1"><label for="c1">Imprimir 10 a 15 peças de teste até dominar a máquina (nivelamento, primeira camada, multicor).</label></li>
+          <li><input type="checkbox" id="c2"><label for="c2">Escolher um nicho principal para começar (ex.: presentes personalizados, decoração, festas).</label></li>
+          <li><input type="checkbox" id="c3"><label for="c3">Montar um catálogo inicial de 8 a 12 produtos já testados e fotografados.</label></li>
+          <li><input type="checkbox" id="c4"><label for="c4">Calcular o preço de cada produto nesta calculadora e anotar numa tabela.</label></li>
+          <li><input type="checkbox" id="c5"><label for="c5">Criar o Instagram e o WhatsApp Business com catálogo, mesmo nome nos dois.</label></li>
+          <li><input type="checkbox" id="c6"><label for="c6">Definir prazo padrão, forma de pagamento e regra do sinal para encomendas.</label></li>
+          <li><input type="checkbox" id="c7"><label for="c7">Comprar embalagens e fazer um cartão ou etiqueta com a marca.</label></li>
+          <li><input type="checkbox" id="c8"><label for="c8">Separar o dinheiro do negócio do dinheiro pessoal (uma conta só para isso).</label></li>
+          <li><input type="checkbox" id="c9"><label for="c9">Fazer as primeiras vendas para amigos e família e pedir foto e depoimento.</label></li>
+          <li><input type="checkbox" id="c10"><label for="c10">Abrir o MEI quando as vendas ficarem frequentes.</label></li>
+        </ul>
+      </div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><h2>Preço: os erros que quebram quem está começando</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Nunca cobre só o filamento.</strong> O plástico costuma ser a menor parte do custo. Seu tempo, a energia, as falhas e o desgaste da máquina também entram.</li>
+        <li><strong>Não comece barato para "pegar clientela".</strong> Baixar preço depois é fácil; subir é difícil e afasta quem já comprou.</li>
+        <li><strong>Tenha um pedido mínimo.</strong> Peças pequenas dão trabalho igual às grandes. Ex.: chaveiro só em kits de 3, ou valor mínimo por pedido.</li>
+        <li><strong>Cobre a modelagem à parte.</strong> Se o cliente pede algo que ainda não existe, criar o arquivo é um serviço. Cobre por hora ou valor fixo.</li>
+        <li><strong>Peça sinal de 50% em encomendas personalizadas.</strong> Assim o material está pago mesmo se o cliente desistir.</li>
+        <li><strong>Venda em quantidade com desconto controlado.</strong> Lembrancinha de festa (30, 50, 100 unidades) é ótima porque a máquina trabalha enquanto vocês dormem. Dê 5% a 15% de desconto, nunca abaixo do "preço mínimo" da calculadora.</li>
+        <li><strong>Reveja os preços a cada novo rolo.</strong> Filamento e energia mudam de preço. Atualize os custos na aba Calculadora.</li>
+      </ul></div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/></svg></span><h2>O que vender</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Personalizado vende mais e aceita preço maior.</strong> Nome, foto, logo, data. É o que a loja de shopping não oferece.</li>
+        <li><strong>Use a cor como diferencial.</strong> A impressora de vocês faz peças multicoloridas sem pintar. Explore isso em chaveiros, placas, topos de bolo e letreiros.</li>
+        <li><strong>Ideias que costumam sair bem:</strong> chaveiros com nome, topos de bolo, lembrancinhas de festa, vasos e cachepôs, organizadores de mesa, suportes de celular e fone, luminárias, placas para empresas e porta-cartões.</li>
+        <li><strong>Venda também para empresas.</strong> Brindes com logo, displays de balcão e placas de QR Code para restaurantes e lojas. Pedidos maiores e recorrentes.</li>
+        <li><strong>Evite peças que precisam de muita resistência</strong> (peças de carro, coisas que ficam no sol ou suportam peso) até conhecerem bem os materiais. PLA amolece no calor; PETG aguenta melhor.</li>
+        <li><strong>Teste antes de anunciar.</strong> Todo produto do catálogo deve ter sido impresso pelo menos uma vez por vocês, com tempo e peso anotados.</li>
+      </ul></div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><h2>Cuidados legais com os modelos</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Modelo grátis não é modelo liberado para venda.</strong> Em sites como Printables, Thingiverse e MakerWorld, cada arquivo tem uma licença. Muitas proíbem uso comercial. Confira antes de vender.</li>
+        <li><strong>Prefira modelos com licença comercial</strong>, pague assinaturas de criadores que liberam a venda, ou criem os próprios modelos.</li>
+        <li><strong>Evite personagens e marcas famosas</strong> (desenhos, times, super-heróis, logos). Vender isso sem autorização pode gerar denúncia e derrubar sua loja nas plataformas.</li>
+        <li><strong>Formalize com o MEI</strong> quando as vendas ficarem frequentes. Vocês passam a emitir nota, conseguem vender para empresas e contribuem para o INSS. Confira no Portal do Empreendedor se a atividade de vocês se enquadra.</li>
+      </ul></div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg></span><h2>Como divulgar e vender</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Grave a impressora trabalhando.</strong> Vídeos curtos da peça "nascendo" camada por camada prendem a atenção nos Reels e no TikTok. Termine mostrando a peça pronta na mão do cliente.</li>
+        <li><strong>Foto boa vende.</strong> Luz natural perto da janela, fundo liso, peça limpa. Mostre o tamanho com a mão ou um objeto conhecido.</li>
+        <li><strong>WhatsApp Business com catálogo.</strong> Coloque preço, tamanho e prazo em cada produto. Use respostas rápidas para as perguntas que se repetem.</li>
+        <li><strong>Comece pelo bairro e pelo círculo de vocês.</strong> Amigos, família, colegas de trabalho e faculdade. Peça indicação e foto do cliente com a peça.</li>
+        <li><strong>Feiras e bazares locais</strong> são ótimos para testar quais produtos chamam atenção. Leve peças prontas e um cartaz com QR Code para o Instagram.</li>
+        <li><strong>Parcerias:</strong> confeitarias (topos de bolo), decoradoras de festa (lembrancinhas), lojas de presentes (consignação).</li>
+        <li><strong>Marketplaces (Shopee, Mercado Livre, Elo7)</strong> trazem volume, mas cobram taxas. Coloque a taxa na calculadora para não vender no prejuízo.</li>
+      </ul></div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><h2>Atendimento e pedidos</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Prometa um prazo maior do que o real.</strong> Se a peça fica pronta em 2 dias, diga 4. Entregar antes encanta; atrasar queima a marca.</li>
+        <li><strong>Mande uma prévia antes de imprimir</strong> peças personalizadas (print do fatiador ou montagem com o nome). Peça "ok" por escrito no WhatsApp.</li>
+        <li><strong>Confirme medidas, cores e grafia do nome</strong> sempre por escrito. Erro de digitação do cliente não é refeito de graça.</li>
+        <li><strong>Registre todo pedido</strong>: cliente, produto, valor, sinal pago, prazo e status. Uma planilha simples já resolve.</li>
+        <li><strong>Embalagem caprichada</strong> com cartãozinho de agradecimento e o @ do Instagram. Isso gera foto, marcação e indicação.</li>
+        <li><strong>Peça avaliação</strong> depois da entrega. Depoimento real é a melhor propaganda.</li>
+      </ul></div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><h2>Qualidade e cuidado com a máquina</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Mesa limpa = peça que gruda.</strong> Limpe a placa com álcool isopropílico e não encoste os dedos nela.</li>
+        <li><strong>Guarde o filamento seco.</strong> Em clima úmido como o de São Luís, o filamento absorve umidade e a peça sai com fios e bolhas. Use pote ou saco fechado com sílica.</li>
+        <li><strong>Acompanhe a primeira camada</strong> de toda impressão. Se ela sair ruim, cancele na hora e economize filamento.</li>
+        <li><strong>Use filamento de marca boa.</strong> Rolo barato demais costuma dar mais falha, e a falha custa mais do que a economia.</li>
+        <li><strong>Agrupe peças na mesma impressão</strong> quando der. Imprimir 6 chaveiros de uma vez gasta muito menos tempo do que 6 impressões separadas.</li>
+        <li><strong>Na multicor, gaste menos com troca de cor.</strong> Menos trocas por camada e cores parecidas lado a lado reduzem o desperdício e o tempo. Compare no fatiador antes de fechar o preço.</li>
+        <li><strong>Faça a manutenção indicada no manual</strong> e anote a data. Máquina parada é venda perdida.</li>
+      </ul></div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/></svg></span><h2>Dinheiro e organização</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Conta separada para o negócio.</strong> Todo dinheiro de venda entra nela; todo gasto do negócio sai dela.</li>
+        <li><strong>Defina um pró-labore.</strong> Vocês tiram um valor fixo por mês. O resto fica no negócio.</li>
+        <li><strong>Reinvista no começo.</strong> Mais cores de filamento, embalagens e, mais pra frente, uma segunda impressora para dobrar a produção.</li>
+        <li><strong>Guarde o dinheiro da "vida útil".</strong> A parte do preço que paga o desgaste da impressora deve ficar guardada para peças de reposição e manutenção.</li>
+        <li><strong>Anote todas as vendas e todas as falhas.</strong> Em um mês vocês vão saber o que mais vende, o que mais dá lucro e qual reserva para falhas faz sentido.</li>
+        <li><strong>Dividam as funções.</strong> Ex.: uma pessoa cuida de produção e qualidade; a outra de atendimento e redes sociais. Fica mais leve e ninguém se sobrecarrega.</li>
+      </ul></div>
+    </details></section>
+
+    <section><details>
+      <summary><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h2>Como usar a calculadora no dia a dia</h2><span class="chev">›</span></summary>
+      <div class="gbody"><ul>
+        <li><strong>Fatie o modelo</strong> no Orca-Flashforge e anote o peso total, o descarte de troca de cor e o tempo.</li>
+        <li><strong>Coloque esses números</strong> no bloco "A peça" e estime seu tempo manual.</li>
+        <li><strong>Use o "Preço arredondado"</strong> no catálogo. Preços terminados em ,90 parecem mais organizados.</li>
+        <li><strong>Nunca venda abaixo do "Preço mínimo".</strong> Abaixo dele, vocês pagam para trabalhar.</li>
+        <li><strong>Comparem com a concorrência</strong> no Instagram e na Shopee. Se o preço de vocês ficar muito acima, revejam o tempo, o tamanho da peça ou agrupem mais peças por impressão, em vez de cortar a margem.</li>
+        <li><span class="tag">Dica</span>Margem de 30% é um ponto de partida. Para peças personalizadas e únicas, 40% a 60% é comum e justo.</li>
+      </ul></div>
+    </details></section>
+  </div>
+</div>
+
+<script>
+(function(){
+  const KEY="precifica3d:v1";
+  const ids=["nome","gramas","purga","horas","trab","filkg","kwh","watts","hora","impval","vida","extras","margem","falha","taxa"];
+  const defaults={};
+  ids.forEach(id=>defaults[id]=document.getElementById(id).value);
+  const brl=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const num=id=>{const v=parseFloat(String(document.getElementById(id).value).replace(",","."));return isFinite(v)&&v>0?v:0};
+
+  function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)ids.forEach(id=>{if(s[id]!=null)document.getElementById(id).value=s[id]})}catch(e){}}
+  function save(){try{const s={};ids.forEach(id=>s[id]=document.getElementById(id).value);localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+
+  function calc(){
+    const fil=(num("gramas")+num("purga"))/1000*num("filkg");
+    const ener=num("watts")/1000*num("horas")*num("kwh");
+    const depr=num("impval")/Math.max(num("vida"),1)*num("horas");
+    const mao=num("trab")/60*num("hora");
+    const ext=num("extras");
+    const base=fil+ener+depr+mao+ext;
+    const falha=base*num("falha")/100;
+    const custo=base+falha;
+    const M=num("margem")/100, T=num("taxa")/100;
+    const parts=[["Filamento",fil,"--bar1"],["Seu trabalho",mao,"--bar2"],["Energia",ener,"--bar3"],["Desgaste da máquina",depr,"--bar4"],["Embalagem e extras",ext,"--bar5"],["Reserva p/ falhas",falha,"--bar6"]];
+    const alerts=[];
+    [["gramas","Peso da peça"],["horas","Tempo de impressão"],["filkg","Preço do filamento"],["kwh","Preço da energia"]].forEach(([id,n])=>{
+      if(num(id)===0)alerts.push(["bad",`O campo "${n}" está vazio ou com valor inválido, e o preço ficou mais baixo do que deveria. Use ponto em vez de vírgula (ex.: 1.5).`]);
+    });
+    let preco=0,minimo=0,lucro=0;
+    if(M+T>=1){alerts.push(["bad","Margem + taxa somam 100% ou mais. Reduza uma delas para calcular o preço."])}
+    else{
+      preco=custo/(1-M-T); minimo=custo/(1-T); lucro=preco-custo-preco*T;
+    }
+    const arred=preco>0?Math.max(Math.ceil(preco-0.9)+0.9,0.9):0;
+    document.getElementById("outPrice").textContent=brl(preco);
+    document.getElementById("outRound").textContent=brl(arred);
+    document.getElementById("outCost").textContent=brl(custo);
+    document.getElementById("outProfit").textContent=brl(lucro);
+    document.getElementById("outMin").textContent=brl(minimo);
+    const bar=document.getElementById("bar"), lg=document.getElementById("legend");
+    bar.innerHTML="";lg.innerHTML="";
+    parts.forEach(([n,v,c])=>{
+      if(custo>0&&v>0){const i=document.createElement("i");i.style.width=(v/custo*100)+"%";i.style.background=`var(${c})`;i.title=n;bar.appendChild(i)}
+      const d=document.createElement("div");
+      d.innerHTML=`<span class="dot" style="background:var(${c})"></span><span>${n}</span><em>${brl(v)}</em>`;lg.appendChild(d);
+    });
+    if(M>0&&M<0.2&&M+T<1)alerts.push(["","Margem abaixo de 20% deixa pouco espaço para desconto, frete grátis ou um imprevisto."]);
+    if(num("trab")===0)alerts.push(["","Seu tempo manual está zerado. Mesmo tirar a peça da mesa e embalar leva alguns minutos."]);
+    if(custo>0&&fil/custo<0.25)alerts.push(["","Repare: o filamento é só uma parte pequena do custo. Por isso cobrar \"pelo peso\" dá prejuízo."]);
+    document.getElementById("alerts").innerHTML=alerts.map(([k,t])=>`<div class="alert ${k}">${t}</div>`).join("");
+    save();
+  }
+
+  load();calc();
+  document.getElementById("form").addEventListener("input",calc);
+  document.getElementById("form").addEventListener("submit",e=>e.preventDefault());
+  document.getElementById("reset").addEventListener("click",()=>{ids.forEach(id=>document.getElementById(id).value=defaults[id]);calc()});
+
+  // Abas
+  const tabs=[["tab-calc","calc"],["tab-guia","guia"]];
+  function show(which){tabs.forEach(([t,p])=>{const on=p===which;document.getElementById(t).setAttribute("aria-selected",on);document.getElementById(p).hidden=!on})}
+  tabs.forEach(([t,p])=>document.getElementById(t).addEventListener("click",()=>{show(p);try{history.replaceState(null,"","#"+p)}catch(e){location.hash=p}}));
+  function fromHash(){const h=(location.hash||"").slice(1);show(h==="guia"?"guia":"calc")}
+  window.addEventListener("hashchange",fromHash);fromHash();
+
+  // Checklist
+  const CK="precifica3d:check";
+  const boxes=[...document.querySelectorAll("#checklist input")];
+  function prog(){const n=boxes.filter(b=>b.checked).length;document.getElementById("prog").textContent=n+"/"+boxes.length}
+  try{const s=JSON.parse(localStorage.getItem(CK)||"[]");boxes.forEach(b=>b.checked=s.includes(b.id))}catch(e){}
+  boxes.forEach(b=>b.addEventListener("change",()=>{prog();try{localStorage.setItem(CK,JSON.stringify(boxes.filter(x=>x.checked).map(x=>x.id)))}catch(e){}}));
+  prog();
+})();
+</script>
+
+</body></html>
